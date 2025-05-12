@@ -1,0 +1,43 @@
+# --------------------
+# Frontend (Next.js)
+# --------------------
+/node_modules
+/.next/
+/out/
+/build
+/vercel
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env files
+.env*
+.next-env.d.ts
+*.tsbuildinfo
+
+# --------------------
+# Backend (.NET Core)
+# --------------------
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.vs/
+*.vscode/
+*.sln.docstates
+appsettings.Development.json
+appsettings.Local.json
+
+# --------------------
+# Global
+# --------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+*.log
+logs/
