@@ -1,11 +1,11 @@
 # --------------------
 # Frontend (Next.js)
 # --------------------
-/node_modules
-/.next/
-/out/
-/build
-/vercel
+/Frontend/node_modules
+/Frontend/.next/
+/Frontend/out/
+/Frontend/.vercel
+/Frontend/build
 
 # Debug logs
 npm-debug.log*
