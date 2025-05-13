@@ -40,7 +40,11 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
 
             <div className="flex items-center gap-2">
             {member.balance !== 0 && (
-              <Button variant="outline" size="sm" onClick={() => handleSettleUpClick(member)}>
+              <Button
+              onClick={() => handleSettleUpClick(member)}
+              disabled={member.balance >= 0}
+              title={member.balance > 0 ? "You are owed money — nothing to settle" : ""}
+              >
                 Settle Up
               </Button>
             )}

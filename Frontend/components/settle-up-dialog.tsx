@@ -47,14 +47,13 @@ export default function SettleUpDialog({ open, onOpenChange, member, onSettleUp 
     onOpenChange(false)
   }
 
-  // Reset amount when dialog opens with a new member
   useEffect(() => {
     if (open && member) {
       setAmount(Math.abs(member.balance).toFixed(2))
     }
   }, [open, member])
 
-  if (!member) return null
+  if (!member || member.balance > 0) return null
 
   const maxAmount = Math.abs(member.balance)
 
