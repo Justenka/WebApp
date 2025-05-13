@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeftCircle } from "lucide-react"
 import type { Member } from "@/types/member"
+import { userApi } from "@/services/api-client"
 
 export default function NewTransactionPage() {
   const params = useParams()
@@ -24,8 +25,25 @@ export default function NewTransactionPage() {
   const [paidBy, setPaidBy] = useState("")
   const [splitType, setSplitType] = useState("equal")
   const [isSubmitting, setIsSubmitting] = useState(false)
-
   const [members, setMembers] = useState<Member[]>([])
+  const [userName, setUserName] = useState("")
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
+
+  // Fetch the user's name when the component mounts
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const name = await userApi.getUserName()
+        setUserName(name)
+      } catch (error) {
+        console.error("Failed to fetch user name:", error)
+      } finally {
+        setIsLoadingUser(false)
+      }
+    }
+
+    fetchUserName()
+  }, [])
 
   useEffect(() => {
   const fetchMembers = async () => {
@@ -50,6 +68,13 @@ export default function NewTransactionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   if (!title.trim() || !amount || !paidBy) return
+
+  // Check if user has set their name
+    if (!userName) {
+      alert("Please set your name before creating a transaction")
+      router.push("/")
+      return
+    }
 
   setIsSubmitting(true)
 
@@ -230,7 +255,10 @@ export default function NewTransactionPage() {
             <Button variant="outline" type="button" onClick={() => router.push(`/groups/${groupId}`)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !title.trim() || !amount || !paidBy}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !title.trim() || !amount || !paidBy || isLoadingUser || !userName}
+            >
               {isSubmitting ? "Adding..." : "Add Expense"}
             </Button>
           </CardFooter>

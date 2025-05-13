@@ -11,5 +11,6 @@ namespace Backend.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<Member> Members { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<User> UserProfiles { get; set; }
     }
 }

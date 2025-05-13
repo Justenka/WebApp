@@ -7,7 +7,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Group } from "@/types/group"
 
-export default function GroupsList() {
+interface GroupsListProps {
+  yourName: string
+}
+
+export default function GroupsList({ yourName }: GroupsListProps) {
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -25,8 +29,12 @@ export default function GroupsList() {
       }
     }
 
-    fetchGroups()
-  }, [])
+    if (yourName) {
+      fetchGroups()
+    } else {
+      setLoading(false)
+    }
+  }, [yourName])
 
   if (loading) {
     return (
@@ -36,6 +44,14 @@ export default function GroupsList() {
             <CardContent className="p-4">Loading...</CardContent>
           </Card>
         ))}
+      </div>
+    )
+  }
+
+  if (!yourName) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground mb-4">Please set your name to view your groups</p>
       </div>
     )
   }

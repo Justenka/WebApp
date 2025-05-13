@@ -12,6 +12,8 @@ import type { Transaction } from "@/types/transaction"
 import MembersList from "@/components/members-list"
 import TransactionsList from "@/components/transactions-list"
 import AddMemberDialog from "@/components/add-member-dialog"
+import { userApi } from "@/services/api-client"
+
 
 export default function GroupPage() {
   const params = useParams()
@@ -23,8 +25,30 @@ export default function GroupPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
+  const [userName, setUserName] = useState("")
 
   useEffect(() => {
+    // Fetch the user's name
+    const fetchUserName = async () => {
+      try {
+        const name = await userApi.getUserName()
+        setUserName(name)
+
+        // If no name is set, redirect to home to set name
+        if (!name) {
+          alert("Please set your name first")
+          router.push("/")
+          return
+        }
+
+        // Continue with fetching group data
+        fetchGroupData()
+      } catch (error) {
+        console.error("Failed to fetch user name:", error)
+        setLoading(false)
+      }
+    }
+
     const fetchGroupData = async () => {
       try {
         const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
@@ -73,12 +97,6 @@ export default function GroupPage() {
   }
 
   const handleSettleUp = async (memberId: number, amount: number) => {
-    await fetch(`http://localhost:5000/api/group/${groupId}/settle/${memberId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(amount),
-    })
-
     await fetch(`http://localhost:5000/api/group/${groupId}/settle/${memberId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
