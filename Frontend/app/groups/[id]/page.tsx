@@ -126,12 +126,19 @@ export default function GroupPage() {
 
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">{group.title}</h1>
-          <Link href={`/groups/${groupId}/transactions/new`}>
-            <Button>
+          {members.length === 0 ? (
+            <Button disabled title="Add at least one member first">
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Expense
             </Button>
-          </Link>
+            ) : (
+              <Link href={`/groups/${groupId}/transactions/new`}>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Expense
+                </Button>
+              </Link>
+            )}
         </div>
       </div>
 

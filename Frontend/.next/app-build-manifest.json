@@ -6,11 +6,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/groups/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/groups/[id]/page.js"
-    ],
     "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -21,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/groups/new/page.js"
     ],
-    "/groups/[id]/transactions/new/page": [
+    "/groups/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/groups/[id]/transactions/new/page.js"
+      "static/chunks/app/groups/[id]/page.js"
     ]
   }
 }
