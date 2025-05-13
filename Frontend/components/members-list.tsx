@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Trash2 } from "lucide-react"
 import type { Member } from "@/types/member"
 import SettleUpDialog from "@/components/settle-up-dialog"
@@ -12,6 +11,7 @@ interface MembersListProps {
   onSettleUp: (memberId: number, amount: number) => void
   onRemoveMember: (memberId: number) => void
 }
+
 
 export default function MembersList({ members, onSettleUp, onRemoveMember }: MembersListProps) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
@@ -25,21 +25,20 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
   return (
     <div className="space-y-3">
       {members.map((member) => (
-        <div key={member.id} className="flex items-center justify-between py-2 border-b last:border-0">
+        <div key={member.id} className="flex items-center justify-between py-3 border-b last:border-0">
           <div>
             <p className="font-medium">{member.name}</p>
-          </div>
-
-          <div className="flex items-center gap-2">
             {member.balance !== 0 && (
-              <Badge variant={member.balance > 0 ? "success" : "destructive"}>
+              <p className="text-sm text-muted-foreground">
                 {member.balance > 0
                   ? `Owes you ${formatCurrency(member.balance)}`
                   : `You owe ${formatCurrency(Math.abs(member.balance))}`}
-              </Badge>
+              </p>
             )}
-            {member.balance === 0 && <Badge variant="outline">Settled</Badge>}
+            {member.balance === 0 && <p className="text-sm text-muted-foreground">Settled up</p>}
+            </div>
 
+            <div className="flex items-center gap-2">
             {member.balance !== 0 && (
               <Button variant="outline" size="sm" onClick={() => handleSettleUpClick(member)}>
                 Settle Up
@@ -59,9 +58,6 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
           </div>
         </div>
       ))}
-
-      {/* Import the SettleUpDialog at the top of the file */}
-      {/* @ts-ignore - This will be fixed when we import the component */}
       <SettleUpDialog
         open={isSettleUpOpen}
         onOpenChange={setIsSettleUpOpen}

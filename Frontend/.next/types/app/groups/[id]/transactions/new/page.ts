@@ -1,4 +1,4 @@
-// File: C:\Users\Justi\OneDrive\Desktop\WebApp\WebApp\Frontend\app\groups\[id]\transactions\new\page.tsx
+// File: C:\Users\Justi\OneDrive\Desktop\Practice\Frontend\app\groups\[id]\transactions\new\page.tsx
 import * as entry from '../../../../../../../app/groups/[id]/transactions/new/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

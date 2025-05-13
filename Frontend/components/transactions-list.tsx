@@ -23,7 +23,7 @@ export default function TransactionsList({ transactions }: TransactionsListProps
               <div>
                 <h3 className="font-medium">{transaction.title}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {transaction.date.toLocaleDateString()} • Paid by {transaction.paidBy}
+                  {new Date(transaction.date).toISOString().slice(0, 10)} • Paid by {transaction.paidBy}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">Split: {transaction.splitType}</p>
               </div>

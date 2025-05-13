@@ -18,7 +18,7 @@ import AddMemberDialog from "@/components/add-member-dialog"
 export default function GroupPage() {
   const params = useParams()
   const router = useRouter()
-  const groupId = Number(params.id)
+  const groupId = params?.id ? parseInt(params.id as string) : NaN;
 
   const [group, setGroup] = useState<Group | null>(null)
   const [members, setMembers] = useState<Member[]>([])
@@ -27,7 +27,6 @@ export default function GroupPage() {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
 
   useEffect(() => {
-    // In a real app, this would fetch from your ASP.NET Core API
     const fetchGroupData = async () => {
       try {
         const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
@@ -36,7 +35,6 @@ export default function GroupPage() {
         const groupData = await groupRes.json();
         setGroup(groupData);
 
-        // Optional: If members and transactions are returned together
         setMembers(groupData.members || []);
         setTransactions(groupData.transactions || []);
 
@@ -83,11 +81,15 @@ export default function GroupPage() {
       body: JSON.stringify(amount),
     })
 
-    setMembers(members.map(m =>
-      m.id === memberId
-        ? { ...m, balance: m.balance > 0 ? Math.max(0, m.balance - amount) : Math.min(0, m.balance + amount) }
-        : m
-    ))
+    await fetch(`https://localhost:5000/api/group/${groupId}/settle/${memberId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(amount),
+    });
+
+    const groupRes = await fetch(`https://localhost:5000/api/group/${groupId}`);
+    const groupData = await groupRes.json();
+    setMembers(groupData.members || []);
   }
 
   if (loading) {

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -25,49 +25,63 @@ export default function NewTransactionPage() {
   const [splitType, setSplitType] = useState("equal")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Mock members data - in a real app, fetch this from your API
-  const members: Member[] = [
-    { id: 1, name: "You", balance: 0 },
-    { id: 2, name: "John", balance: 0 },
-    { id: 3, name: "Sarah", balance: 0 },
-    { id: 4, name: "Mike", balance: 0 },
-  ]
+  const [members, setMembers] = useState<Member[]>([])
+
+  useEffect(() => {
+  const fetchMembers = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/group/${groupId}`);
+      if (!response.ok) throw new Error("Failed to fetch group");
+
+      const data = await response.json();
+      setMembers(data.members || []);
+    } catch (error) {
+      console.error("Error loading members:", error);
+    }
+  };
+
+  if (groupId) fetchMembers();
+}, [groupId]);
 
   // Mock state for split values
   const [percentages, setPercentages] = useState<Record<number, string>>({})
   const [amounts, setAmounts] = useState<Record<number, string>>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim() || !amount || !paidBy) return
+  e.preventDefault()
+  if (!title.trim() || !amount || !paidBy) return
 
-    setIsSubmitting(true)
+  setIsSubmitting(true)
 
-    try {
-      // In a real app, this would call your ASP.NET Core API with the appropriate split data
-      // const response = await fetch(`/api/groups/${groupId}/transactions`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     title,
-      //     amount: parseFloat(amount),
-      //     paidBy,
-      //     splitType,
-      //     splitDetails: splitType === 'percentage' ? percentages :
-      //                   splitType === 'dynamic' ? amounts : null
-      //   })
-      // })
-
-      // Mock implementation
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Redirect to the group page
-      router.push(`/groups/${groupId}`)
-    } catch (error) {
-      console.error("Failed to create transaction:", error)
-      setIsSubmitting(false)
+  try {
+    const payload = {
+      title,
+      amount: parseFloat(amount),
+      paidBy,
+      splitType,
+      splitDetails:
+        splitType === "percentage"
+          ? Object.fromEntries(Object.entries(percentages).map(([id, val]) => [id, parseFloat(val)]))
+          : splitType === "dynamic"
+          ? Object.fromEntries(Object.entries(amounts).map(([id, val]) => [id, parseFloat(val)]))
+          : null
     }
+
+    const response = await fetch(`http://localhost:5000/api/group/${groupId}/transactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) throw new Error("Failed to create transaction")
+
+    router.push(`/groups/${groupId}`)
+  } catch (error) {
+    console.error("Failed to create transaction:", error)
+    alert("Failed to add expense.")
+    setIsSubmitting(false)
   }
+}
 
   const handlePercentageChange = (memberId: number, value: string) => {
     setPercentages({

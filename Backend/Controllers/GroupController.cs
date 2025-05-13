@@ -86,5 +86,71 @@ namespace Backend.Controllers
 
             return Ok(group);
         }
+
+        [HttpPost("{groupId}/transactions")]
+        public IActionResult AddTransaction(int groupId, [FromBody] CreateTransactionDto dto)
+        {
+            var group = _context.Groups.Include(g => g.Members).FirstOrDefault(g => g.Id == groupId);
+            if (group == null) return NotFound("Group not found");
+
+            // Create the transaction
+            var transaction = new Transaction
+            {
+                Title = dto.Title,
+                Amount = dto.Amount,
+                PaidBy = dto.PaidBy,
+                SplitType = dto.SplitType,
+                GroupId = groupId
+            };
+
+            _context.Transactions.Add(transaction);
+
+            // Apply the balance logic
+            var totalAmount = dto.Amount;
+
+            if (dto.SplitType == "equal")
+            {
+                var share = totalAmount / group.Members.Count;
+                foreach (var member in group.Members)
+                {
+                    if (member.Name == dto.PaidBy)
+                        member.Balance += totalAmount - share;
+                    else
+                        member.Balance -= share;
+                }
+            }
+            else if (dto.SplitType == "percentage" && dto.SplitDetails != null)
+            {
+                foreach (var kvp in dto.SplitDetails)
+                {
+                    var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
+                    if (member == null) continue;
+
+                    var share = totalAmount * (kvp.Value / 100);
+                    if (member.Name == dto.PaidBy)
+                        member.Balance += totalAmount - share;
+                    else
+                        member.Balance -= share;
+                }
+            }
+            else if (dto.SplitType == "dynamic" && dto.SplitDetails != null)
+            {
+                foreach (var kvp in dto.SplitDetails)
+                {
+                    var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
+                    if (member == null) continue;
+
+                    var share = kvp.Value;
+                    if (member.Name == dto.PaidBy)
+                        member.Balance += totalAmount - share;
+                    else
+                        member.Balance -= share;
+                }
+            }
+
+            _context.SaveChanges();
+
+            return Ok(transaction);
+        }
     }
 }

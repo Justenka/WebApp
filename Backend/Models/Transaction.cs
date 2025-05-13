@@ -9,5 +9,6 @@ namespace Backend.Models
         public string PaidBy { get; set; }
         public string SplitType { get; set; }
         public int GroupId { get; set; }
+        public DateTime Date { get; set; } = DateTime.UtcNow;
     }
 }
