@@ -137,14 +137,30 @@ namespace Backend.Controllers
 
             if (dto.SplitType == "equal")
             {
-                var share = totalAmount / group.Members.Count;
-                foreach (var member in group.Members)
+                int memberCount = group.Members.Count;
+                decimal baseShare = Math.Floor((totalAmount / memberCount) * 100) / 100; // round down to 2 decimals
+                decimal remainder = totalAmount - baseShare * memberCount;
+
+                var orderedMembers = group.Members.OrderBy(m => m.Id).ToList(); // consistent order
+                int i = 0;
+
+                foreach (var member in orderedMembers)
                 {
+                    decimal share = baseShare;
+
+                    // Distribute the remainder, one cent at a time
+                    if (i < (int)Math.Round(remainder * 100)) // convert to cents
+                    {
+                        share += 0.01m;
+                    }
+
                     if (member.Id != payer.Id)
                     {
                         member.Balance -= share;
                         totalOwedToPayer += share;
                     }
+
+                    i++;
                 }
             }
             else if (dto.SplitType == "percentage" && dto.SplitDetails != null)
