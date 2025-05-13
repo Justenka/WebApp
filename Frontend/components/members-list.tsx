@@ -47,12 +47,12 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
 
             {member.name !== "You" && (
               <Button
-                variant="ghost"
-                size="icon"
+                variant="destructive"
                 onClick={() => onRemoveMember(member.id)}
-                className="text-muted-foreground hover:text-destructive"
+                disabled={member.balance !== 0}
+                title={member.balance !== 0 ? "Cannot remove member with unsettled balance" : ""}
               >
-                <Trash2 className="h-4 w-4" />
+                Remove
               </Button>
             )}
           </div>
