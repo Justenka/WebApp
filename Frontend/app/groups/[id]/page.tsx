@@ -5,8 +5,6 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { PlusCircle, ArrowLeftCircle, UserPlus } from "lucide-react"
 import type { Group } from "@/types/group"
 import type { Member } from "@/types/member"
@@ -81,13 +79,13 @@ export default function GroupPage() {
       body: JSON.stringify(amount),
     })
 
-    await fetch(`https://localhost:5000/api/group/${groupId}/settle/${memberId}`, {
+    await fetch(`http://localhost:5000/api/group/${groupId}/settle/${memberId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(amount),
     });
 
-    const groupRes = await fetch(`https://localhost:5000/api/group/${groupId}`);
+    const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
     const groupData = await groupRes.json();
     setMembers(groupData.members || []);
   }
@@ -152,39 +150,14 @@ export default function GroupPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="transactions">
-        <TabsList className="mb-4">
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="balances">Balances</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="transactions">
+      <Card>
+        <CardHeader>
+          <CardTitle>Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
           <TransactionsList transactions={transactions} />
-        </TabsContent>
-
-        <TabsContent value="balances">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-medium mb-4">Group Balances</h3>
-              <div className="space-y-4">
-                {members.map((member) => (
-                  <div key={member.id} className="flex justify-between items-center pb-2 border-b">
-                    <span>{member.name}</span>
-                    {member.balance !== 0 && (
-                      <Badge variant={member.balance > 0 ? "success" : "destructive"}>
-                        {member.balance > 0
-                          ? `Owes you ${formatCurrency(member.balance)}`
-                          : `You owe ${formatCurrency(Math.abs(member.balance))}`}
-                      </Badge>
-                    )}
-                    {member.balance === 0 && <Badge variant="outline">Settled</Badge>}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
 
       <AddMemberDialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} onAddMember={handleAddMember} />
     </div>
