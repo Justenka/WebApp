@@ -82,17 +82,36 @@ namespace Backend.Controllers
             var group = _context.Groups.Include(g => g.Members).FirstOrDefault(g => g.Id == groupId);
             if (group == null) return NotFound();
 
-            var member = group.Members.FirstOrDefault(m => m.Id == memberId);
-            if (member == null) return NotFound();
+            var payer = group.Members.FirstOrDefault(m => m.Id == memberId);
+            if (payer == null) return NotFound();
 
-            if (member.Balance > 0)
-                member.Balance = Math.Max(0, member.Balance - amount);
-            else
-                member.Balance = Math.Min(0, member.Balance + amount);
+            if (payer.Balance >= 0)
+                return BadRequest("This member doesn't owe money.");
+
+            decimal remainingToSettle = Math.Min(Math.Abs(payer.Balance), amount);
+
+            // Get all members who are owed money (positive balance), ordered by how much they're owed
+            var owedMembers = group.Members
+                .Where(m => m.Balance > 0)
+                .OrderByDescending(m => m.Balance)
+                .ToList();
+
+            foreach (var receiver in owedMembers)
+            {
+                if (remainingToSettle == 0)
+                    break;
+
+                decimal transferAmount = Math.Min(receiver.Balance, remainingToSettle);
+
+                receiver.Balance -= transferAmount;
+                payer.Balance += transferAmount;
+                remainingToSettle -= transferAmount;
+            }
+
             _context.SaveChanges();
-
             return Ok(group);
         }
+
 
         [HttpPost("{groupId}/transactions")]
         public IActionResult AddTransaction(int groupId, [FromBody] CreateTransactionDto dto)

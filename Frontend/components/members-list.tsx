@@ -51,8 +51,12 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
               {member.balance !== 0 && (
                 <p className="text-sm text-muted-foreground">
                   {member.balance > 0
-                    ? `Owes you ${formatCurrency(member.balance)}`
-                    : `You owe ${formatCurrency(Math.abs(member.balance))}`}
+                    ? `${member.name === userName ? "You are owed" : "Owes you"} ${formatCurrency(member.balance)}`
+                    : member.balance < 0
+                    ? `${member.name === userName ? "You owe" : "Owes"} ${formatCurrency(Math.abs(member.balance))}`
+                    : member.name === userName
+                    ? "You owe nothing"
+                    : "Settled up"}
                 </p>
               )}
               {member.balance === 0 && <p className="text-sm text-muted-foreground">Settled up</p>}
