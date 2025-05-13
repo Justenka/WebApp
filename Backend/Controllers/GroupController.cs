@@ -20,6 +20,10 @@ namespace Backend.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Group>> GetGroups()
         {
+            var groups = _context.Groups
+                .Include(g => g.Members)
+                .ToList();
+
             return Ok(_context.Groups.ToList());
         }
 

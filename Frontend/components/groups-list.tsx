@@ -68,30 +68,34 @@ export default function GroupsList({ yourName }: GroupsListProps) {
   }
 
   return (
-    <div className="space-y-3">
-      {groups.map((group) => (
-        <Link href={`/groups/${group.id}`} key={group.id}>
-          <Card className="hover:bg-muted/50 transition-colors">
-            <CardContent className="p-4 flex justify-between items-center">
-              <h3 className="font-medium">{group.title}</h3>
-              <Badge variant={group.balance === 0 ? "outline" : group.balance > 0 ? "success" : "destructive"}>
-                {group.balance > 0
-                  ? `You are owed ${formatCurrency(group.balance)}`
-                  : group.balance < 0
-                  ? `You owe ${formatCurrency(Math.abs(group.balance))}`
-                  : `Settled`}
-              </Badge>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  )
-}
+  <div className="space-y-3">
+    {groups.map((group) => {
+    const yourMember = group.members?.find((m) => m.name === yourName)
+    const yourBalance = yourMember?.balance ?? 0
+
+    return (
+      <Link href={`/groups/${group.id}`} key={group.id}>
+        <Card className="hover:bg-muted/50 transition-colors">
+          <CardContent className="p-4 flex justify-between items-center">
+            <h3 className="font-medium">{group.title}</h3>
+            <Badge variant={yourBalance === 0 ? "outline" : yourBalance > 0 ? "success" : "destructive"}>
+              {yourBalance > 0
+                ? `You are owed ${formatCurrency(yourBalance)}`
+                : yourBalance < 0
+                ? `You owe ${formatCurrency(Math.abs(yourBalance))}`
+                : `Settled`}
+            </Badge>
+          </CardContent>
+        </Card>
+      </Link>
+    )
+  })}
+  </div>
+)
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(amount)
-}
+}}
