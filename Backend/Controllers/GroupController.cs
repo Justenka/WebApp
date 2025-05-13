@@ -81,7 +81,10 @@ namespace Backend.Controllers
             var member = group.Members.FirstOrDefault(m => m.Id == memberId);
             if (member == null) return NotFound();
 
-            member.Balance += member.Balance > 0 ? -amount : amount;
+            if (member.Balance > 0)
+                member.Balance = Math.Max(0, member.Balance - amount);
+            else
+                member.Balance = Math.Min(0, member.Balance + amount);
             _context.SaveChanges();
 
             return Ok(group);
