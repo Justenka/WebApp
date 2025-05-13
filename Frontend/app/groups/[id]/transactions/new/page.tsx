@@ -29,7 +29,6 @@ export default function NewTransactionPage() {
   const [userName, setUserName] = useState("")
   const [isLoadingUser, setIsLoadingUser] = useState(true)
 
-  // Fetch the user's name when the component mounts
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -59,17 +58,14 @@ export default function NewTransactionPage() {
   };
 
   if (groupId) fetchMembers();
-}, [groupId]);
+  }, [groupId]);
 
-  // Mock state for split values
   const [percentages, setPercentages] = useState<Record<number, string>>({})
   const [amounts, setAmounts] = useState<Record<number, string>>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   if (!title.trim() || !amount || !paidBy) return
-
-  // Check if user has set their name
     if (!userName) {
       alert("Please set your name before creating a transaction")
       router.push("/")
@@ -128,7 +124,7 @@ export default function NewTransactionPage() {
   return Math.abs(total - 100) < 0.01
   }
 
-const isDynamicValid = () => {
+  const isDynamicValid = () => {
   if (splitType !== "dynamic") return true
   const totalSplit = Object.values(amounts).reduce((sum, val) => sum + parseFloat(val || "0"), 0)
   return Math.abs(totalSplit - parseFloat(amount || "0")) < 0.01

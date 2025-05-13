@@ -36,7 +36,6 @@ export default function SettleUpDialog({ open, onOpenChange, member, onSettleUp 
     const settleAmount = Number.parseFloat(amount)
     if (isNaN(settleAmount) || settleAmount <= 0) return
 
-    // Ensure the amount doesn't exceed the balance
     const maxAmount = Math.abs(member.balance)
     const finalAmount = Math.min(settleAmount, maxAmount)
 

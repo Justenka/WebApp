@@ -13,14 +13,12 @@ export default function HomePage() {
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load your name from the database on component mount
   useEffect(() => {
     const fetchUserName = async () => {
       try {
         const name = await userApi.getUserName()
         setYourName(name)
 
-        // If no name is set, open the dialog
         if (!name) {
           setIsNameDialogOpen(true)
         }
@@ -40,7 +38,6 @@ export default function HomePage() {
       setYourName(name)
     } catch (error) {
       console.error("Failed to save user name:", error)
-      // You might want to show an error message to the user here
     }
   }
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
 import type { Member } from "@/types/member"
 import SettleUpDialog from "@/components/settle-up-dialog"
 import { userApi } from "@/services/api-client"
@@ -19,7 +18,6 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
   const [isSettleUpOpen, setIsSettleUpOpen] = useState(false)
   const [userName, setUserName] = useState("")
 
-  // Get the user's name when the component mounts
   useEffect(() => {
     const fetchUserName = async () => {
       try {

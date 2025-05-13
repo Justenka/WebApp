@@ -29,53 +29,38 @@ export default function GroupPage() {
   const [userName, setUserName] = useState("")
 
   useEffect(() => {
-    // Fetch the user's name
-    const fetchUserName = async () => {
-      try {
-        const name = await userApi.getUserName()
-        setUserName(name)
+  const fetchData = async () => {
+    try {
+      const name = await userApi.getUserName()
+      setUserName(name)
 
-        // If no name is set, redirect to home to set name
-        if (!name) {
-          alert("Please set your name first")
-          router.push("/")
-          return
-        }
+      if (!name) {
+        alert("Please set your name first")
+        router.push("/")
+        return
+      }
 
-        // Continue with fetching group data
-        fetchGroupData()
+      const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
+      if (!groupRes.ok) throw new Error("Failed to fetch group");
+
+      const groupData = await groupRes.json();
+      setGroup(groupData);
+      setMembers(groupData.members || []);
+      setTransactions(groupData.transactions || []);
       } catch (error) {
-        console.error("Failed to fetch user name:", error)
+        console.error("Failed to load data:", error)
+      } finally {
         setLoading(false)
       }
     }
 
-    const fetchGroupData = async () => {
-      try {
-        const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
-        if (!groupRes.ok) throw new Error("Failed to fetch group");
-
-        const groupData = await groupRes.json();
-        setGroup(groupData);
-
-        setMembers(groupData.members || []);
-        setTransactions(groupData.transactions || []);
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch group data:", error);
-        setLoading(false);
-      }
-    };
-
     if (groupId) {
-      fetchGroupData()
+      fetchData()
     }
   }, [groupId])
 
   const handleAddMember = async (name: string): Promise<boolean> => {
     try {
-      // Check for duplicate member names (case insensitive)
       const normalizedName = name.toLowerCase()
       const isDuplicate = members.some((member) => member.name.toLowerCase() === normalizedName)
 
@@ -97,12 +82,6 @@ export default function GroupPage() {
       console.error("Failed to add member")
       return false
     }
-    // Show success toast
-      toast({
-        title: "Member added",
-        description: `${name} has been added to the group.`,
-      })
-
       return true
     } catch (error) {
       console.error("Failed to add member:", error)
@@ -221,11 +200,4 @@ export default function GroupPage() {
       />
     </div>
   )
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("lt-LT", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount)
 }

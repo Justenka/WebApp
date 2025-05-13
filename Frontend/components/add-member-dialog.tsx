@@ -30,7 +30,6 @@ export default function AddMemberDialog({ open, onOpenChange, onAddMember, exist
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Clear form and errors when dialog opens/closes
   useEffect(() => {
     if (open) {
       setName("")
@@ -42,7 +41,6 @@ export default function AddMemberDialog({ open, onOpenChange, onAddMember, exist
     e.preventDefault()
     if (!name.trim()) return
 
-    // Check for duplicate member names (case insensitive)
     const normalizedName = name.trim().toLowerCase()
     const isDuplicate = existingMembers.some((member) => member.name.toLowerCase() === normalizedName)
 
@@ -96,7 +94,7 @@ export default function AddMemberDialog({ open, onOpenChange, onAddMember, exist
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value)
-                  setError(null) // Clear error when user types
+                  setError(null)
                 }}
                 className="col-span-3"
                 placeholder="Enter member name"

@@ -90,7 +90,6 @@ namespace Backend.Controllers
 
             decimal remainingToSettle = Math.Min(Math.Abs(payer.Balance), amount);
 
-            // Get all members who are owed money (positive balance), ordered by how much they're owed
             var owedMembers = group.Members
                 .Where(m => m.Balance > 0)
                 .OrderByDescending(m => m.Balance)
@@ -118,6 +117,9 @@ namespace Backend.Controllers
             var group = _context.Groups.Include(g => g.Members).FirstOrDefault(g => g.Id == groupId);
             if (group == null) return NotFound("Group not found");
 
+            var payer = group.Members.FirstOrDefault(m => m.Name == dto.PaidBy);
+            if (payer == null) return BadRequest("Payer not found in group");
+
             var transaction = new Transaction
             {
                 Title = dto.Title,
@@ -129,78 +131,88 @@ namespace Backend.Controllers
 
             _context.Transactions.Add(transaction);
 
-            var totalAmount = dto.Amount;
-            var payer = group.Members.FirstOrDefault(m => m.Name == dto.PaidBy);
-            if (payer == null) return BadRequest("Payer not found in group");
-
-            decimal totalOwedToPayer = 0;
-
-            if (dto.SplitType == "equal")
+            decimal totalOwedToPayer = dto.SplitType switch
             {
-                int memberCount = group.Members.Count;
-                decimal baseShare = Math.Floor((totalAmount / memberCount) * 100) / 100; // round down to 2 decimals
-                decimal remainder = totalAmount - baseShare * memberCount;
-
-                var orderedMembers = group.Members.OrderBy(m => m.Id).ToList(); // consistent order
-                int i = 0;
-
-                foreach (var member in orderedMembers)
-                {
-                    decimal share = baseShare;
-
-                    // Distribute the remainder, one cent at a time
-                    if (i < (int)Math.Round(remainder * 100)) // convert to cents
-                    {
-                        share += 0.01m;
-                    }
-
-                    if (member.Id != payer.Id)
-                    {
-                        member.Balance -= share;
-                        totalOwedToPayer += share;
-                    }
-
-                    i++;
-                }
-            }
-            else if (dto.SplitType == "percentage" && dto.SplitDetails != null)
-            {
-                foreach (var kvp in dto.SplitDetails)
-                {
-                    var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
-                    if (member == null) continue;
-
-                    var share = totalAmount * (kvp.Value / 100);
-
-                    if (member.Id != payer.Id)
-                    {
-                        member.Balance -= share;
-                        totalOwedToPayer += share;
-                    }
-                }
-            }
-            else if (dto.SplitType == "dynamic" && dto.SplitDetails != null)
-            {
-                foreach (var kvp in dto.SplitDetails)
-                {
-                    var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
-                    if (member == null) continue;
-
-                    var share = kvp.Value;
-
-                    if (member.Id != payer.Id)
-                    {
-                        member.Balance -= share;
-                        totalOwedToPayer += share;
-                    }
-                }
-            }
+                "equal" => DistributeEqualSplit(group, payer, dto.Amount),
+                "percentage" => DistributePercentageSplit(group, payer, dto.Amount, dto.SplitDetails),
+                "dynamic" => DistributeDynamicSplit(group, payer, dto.SplitDetails),
+                _ => 0
+            };
 
             payer.Balance += totalOwedToPayer;
-
             _context.SaveChanges();
 
             return Ok(transaction);
         }
+
+        private decimal DistributeEqualSplit(Group group, Member payer, decimal totalAmount)
+        {
+            int memberCount = group.Members.Count;
+            decimal baseShare = Math.Floor((totalAmount / memberCount) * 100) / 100;
+            decimal remainder = totalAmount - baseShare * memberCount;
+
+            var orderedMembers = group.Members.OrderBy(m => m.Id).ToList();
+            decimal totalOwed = 0;
+            for (int i = 0; i < orderedMembers.Count; i++)
+            {
+                var member = orderedMembers[i];
+                decimal share = baseShare;
+                if (i < (int)Math.Round(remainder * 100))
+                {
+                    share += 0.01m;
+                }
+
+                if (member.Id != payer.Id)
+                {
+                    member.Balance -= share;
+                    totalOwed += share;
+                }
+            }
+
+            return totalOwed;
+        }
+
+        private decimal DistributePercentageSplit(Group group, Member payer, decimal totalAmount, Dictionary<int, decimal>? splits)
+        {
+            if (splits == null) return 0;
+            decimal totalOwed = 0;
+
+            foreach (var kvp in splits)
+            {
+                var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
+                if (member == null) continue;
+
+                decimal share = totalAmount * (kvp.Value / 100);
+                if (member.Id != payer.Id)
+                {
+                    member.Balance -= share;
+                    totalOwed += share;
+                }
+            }
+
+            return totalOwed;
+        }
+
+        private decimal DistributeDynamicSplit(Group group, Member payer, Dictionary<int, decimal>? splits)
+        {
+            if (splits == null) return 0;
+            decimal totalOwed = 0;
+
+            foreach (var kvp in splits)
+            {
+                var member = group.Members.FirstOrDefault(m => m.Id == kvp.Key);
+                if (member == null) continue;
+
+                decimal share = kvp.Value;
+                if (member.Id != payer.Id)
+                {
+                    member.Balance -= share;
+                    totalOwed += share;
+                }
+            }
+
+            return totalOwed;
+        }
+
     }
 }

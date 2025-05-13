@@ -19,7 +19,6 @@ export default function NewGroupPage() {
   const [userName, setUserName] = useState("")
   const [isLoadingUser, setIsLoadingUser] = useState(true)
 
-  // Fetch the user's name when the component mounts
   useEffect(() => {
     const fetchUserName = async () => {
       try {
@@ -39,7 +38,6 @@ export default function NewGroupPage() {
   e.preventDefault();
   if (!title.trim()) return;
 
-  // Check if user has set their name
     if (!userName) {
       alert("Please set your name before creating a group")
       router.push("/")
@@ -61,7 +59,6 @@ export default function NewGroupPage() {
       throw new Error("Failed to create group");
     }
 
-    // Redirect to group list after success
     router.push("/")
   } catch (error) {
     console.error("Failed to create group:", error);

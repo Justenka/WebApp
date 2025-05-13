@@ -25,7 +25,6 @@ export default function SetYourNameDialog({ open, onOpenChange, currentName, onS
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Update local state when currentName changes
   useEffect(() => {
     if (currentName) {
       setName(currentName)
@@ -42,7 +41,6 @@ export default function SetYourNameDialog({ open, onOpenChange, currentName, onS
       onOpenChange(false)
     } catch (error) {
       console.error("Error saving name:", error)
-      // You might want to show an error message here
     } finally {
       setIsSubmitting(false)
     }
