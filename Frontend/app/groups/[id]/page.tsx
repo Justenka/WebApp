@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PlusCircle, ArrowLeftCircle, UserPlus } from "lucide-react"
+import { toast } from "@/components/ui/use-toast"
 import type { Group } from "@/types/group"
 import type { Member } from "@/types/member"
 import type { Transaction } from "@/types/transaction"
@@ -72,7 +73,16 @@ export default function GroupPage() {
     }
   }, [groupId])
 
-  const handleAddMember = async (name: string) => {
+  const handleAddMember = async (name: string): Promise<boolean> => {
+    try {
+      // Check for duplicate member names (case insensitive)
+      const normalizedName = name.toLowerCase()
+      const isDuplicate = members.some((member) => member.name.toLowerCase() === normalizedName)
+
+      if (isDuplicate) {
+        return false
+      }
+
     const response = await fetch(`http://localhost:5000/api/group/${groupId}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,6 +95,18 @@ export default function GroupPage() {
       setIsAddMemberOpen(false)
     } else {
       console.error("Failed to add member")
+      return false
+    }
+    // Show success toast
+      toast({
+        title: "Member added",
+        description: `${name} has been added to the group.`,
+      })
+
+      return true
+    } catch (error) {
+      console.error("Failed to add member:", error)
+      return false
     }
   }
 
@@ -103,10 +125,17 @@ export default function GroupPage() {
       body: JSON.stringify(amount),
     });
 
-    const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
-    const groupData = await groupRes.json();
-    setMembers(groupData.members || []);
-  }
+    try {
+      const groupRes = await fetch(`http://localhost:5000/api/group/${groupId}`);
+      if (!groupRes.ok) throw new Error("Failed to refresh group data");
+      const groupData = await groupRes.json();
+      setGroup(groupData);
+      setMembers(groupData.members || []);
+      setTransactions(groupData.transactions || []);
+    } catch (err) {
+      console.error("Failed to refresh group after settle:", err);
+    }
+} 
 
   if (loading) {
     return (
@@ -184,14 +213,19 @@ export default function GroupPage() {
         </CardContent>
       </Card>
 
-      <AddMemberDialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} onAddMember={handleAddMember} />
+      <AddMemberDialog
+        open={isAddMemberOpen}
+        onOpenChange={setIsAddMemberOpen}
+        onAddMember={handleAddMember}
+        existingMembers={members}
+      />
     </div>
   )
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("lt-LT", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   }).format(amount)
 }

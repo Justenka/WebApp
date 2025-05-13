@@ -107,8 +107,8 @@ export default function MembersList({ members, onSettleUp, onRemoveMember }: Mem
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("lt-LT", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   }).format(amount)
 }

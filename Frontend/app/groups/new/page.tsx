@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,15 +10,41 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeftCircle } from "lucide-react"
+import { userApi } from "@/services/api-client"
 
 export default function NewGroupPage() {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [userName, setUserName] = useState("")
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
+
+  // Fetch the user's name when the component mounts
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const name = await userApi.getUserName()
+        setUserName(name)
+      } catch (error) {
+        console.error("Failed to fetch user name:", error)
+      } finally {
+        setIsLoadingUser(false)
+      }
+    }
+
+    fetchUserName()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!title.trim()) return;
+
+  // Check if user has set their name
+    if (!userName) {
+      alert("Please set your name before creating a group")
+      router.push("/")
+      return
+    }
 
   setIsSubmitting(true);
 
@@ -77,7 +103,7 @@ export default function NewGroupPage() {
             <Button variant="outline" type="button" onClick={() => router.push("/")}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !title.trim()}>
+            <Button type="submit" disabled={isSubmitting || !title.trim() || isLoadingUser || !userName}>
               {isSubmitting ? "Creating..." : "Create Group"}
             </Button>
           </CardFooter>

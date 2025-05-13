@@ -114,8 +114,8 @@ export default function SettleUpDialog({ open, onOpenChange, member, onSettleUp 
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("lt-LT", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
   }).format(amount)
 }
