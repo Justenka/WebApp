@@ -86,9 +86,9 @@ export default function NewTransactionPage() {
       splitType,
       splitDetails:
         splitType === "percentage"
-          ? Object.fromEntries(Object.entries(percentages).map(([id, val]) => [id, parseFloat(val)]))
+          ? Object.fromEntries(Object.entries(percentages).map(([id, val]) => [parseInt(id), parseFloat(val)]))
           : splitType === "dynamic"
-          ? Object.fromEntries(Object.entries(amounts).map(([id, val]) => [id, parseFloat(val)]))
+          ? Object.fromEntries(Object.entries(amounts).map(([id, val]) => [parseInt(id), parseFloat(val)]))
           : null
     }
 
@@ -101,12 +101,12 @@ export default function NewTransactionPage() {
     if (!response.ok) throw new Error("Failed to create transaction")
 
     router.push(`/groups/${groupId}`)
-  } catch (error) {
-    console.error("Failed to create transaction:", error)
-    alert("Failed to add expense.")
-    setIsSubmitting(false)
+    } catch (error) {
+      console.error("Failed to create transaction:", error)
+      alert("Failed to add expense.")
+      setIsSubmitting(false)
+    }
   }
-}
 
   const handlePercentageChange = (memberId: number, value: string) => {
     setPercentages({
@@ -120,6 +120,18 @@ export default function NewTransactionPage() {
       ...amounts,
       [memberId]: value,
     })
+  }
+
+  const isPercentageValid = () => {
+  if (splitType !== "percentage") return true
+  const total = Object.values(percentages).reduce((sum, val) => sum + parseFloat(val || "0"), 0)
+  return Math.abs(total - 100) < 0.01
+  }
+
+const isDynamicValid = () => {
+  if (splitType !== "dynamic") return true
+  const totalSplit = Object.values(amounts).reduce((sum, val) => sum + parseFloat(val || "0"), 0)
+  return Math.abs(totalSplit - parseFloat(amount || "0")) < 0.01
   }
 
   return (
@@ -257,8 +269,17 @@ export default function NewTransactionPage() {
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || !title.trim() || !amount || !paidBy || isLoadingUser || !userName}
-            >
+              disabled={
+                isSubmitting ||
+                !title.trim() ||
+                !amount ||
+                !paidBy ||
+                isLoadingUser ||
+                !userName ||
+                !isPercentageValid() ||
+                !isDynamicValid()
+                }
+              >
               {isSubmitting ? "Adding..." : "Add Expense"}
             </Button>
           </CardFooter>
@@ -267,6 +288,7 @@ export default function NewTransactionPage() {
     </div>
   )
 }
+
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-US", {
